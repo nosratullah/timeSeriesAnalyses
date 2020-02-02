@@ -67,15 +67,17 @@ def manualFFT(signal, time, type='one'):
         fft = 1.0/N * np.abs(fft[0:N])
     return fft, time_domain
 
-def filtering(signal, time):
+def filtering(signal, time, range=20):
     N = signal.size
     # sampling rate
     T = 1.0 / 1000.0
     time_domain = np.linspace(0, 1 / (2*T), N//2)
     fft = np.fft.fft(signal)
     fft = 1.0/N * np.abs(fft[1:N//2])
+    fft_peak = np.argmax(fft)
     filtered = fft
-    filtered[10*100:] = 0
+    filtered[:fft_peak-range] = 0
+    filtered[fft_peak+range:] = 0
     time_domain = time_domain[1:]
     inverse_signal = ifft(filtered)
     #fft = np.abs(fft[0:N//2])
