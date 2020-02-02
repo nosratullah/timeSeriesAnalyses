@@ -9,7 +9,6 @@ def sinCreator(time):
     sin = np.sin(randF*timeRange) * randA
     return sin, randF, randA
 
-
 def dotProduct(a,b):
     dot = 0
     if (len(a) == len(b)):
@@ -81,7 +80,14 @@ def manualFFT(signal, time):
     fft = 1.0/N * np.abs(fft[0:N//2])
     return fft#, time_domain
 
-
+def fft_filter(fft_signal, mode='blackman'):
+    length = len(fft_signal)
+    if (mode == 'blackman'):
+        kernel = scipy.signal.blackman(length/20)
+    filterSamelength = np.zeros(length)
+    filterSamelength[0:len(kernel)] = kernel
+    fft_filter = dot_array(fft_signal,filterSamelength)
+    return fft_filter
 
 signal = np.zeros(600)
 sin1, f1, a1 = sinCreator(len(signal))
