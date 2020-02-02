@@ -24,6 +24,23 @@ def dotProduct(a,b):
 
     return dot
 
+def dot_array(a,b):
+    
+    if (len(a) == len(b)):
+        dot_array = np.zeros(len(a))
+        for i in range(len(a)):
+            dot_array[i] = a[i] * b[i]
+    elif (len(a) > len(b)):
+        dot_array = np.zeros(len(a))
+        for i in range(len(b)):
+            dot_array[i] = a[i] * b[i]
+    elif (len(b) > len(a)):
+        dot_array = np.zeros(len(b))
+        for i in range(len(a)):
+            dot_array[i] = a[i] * b[i]
+
+    return dot_array
+
 def automatFFT(signal):
     N = len(signal)
     # sample spacing
