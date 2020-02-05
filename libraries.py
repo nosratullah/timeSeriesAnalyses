@@ -1,4 +1,4 @@
-from scipy.signal import hilbert,find_peaks,correlate
+from scipy.signal import hilbert,find_peaks,correlate,blackman
 import numpy as np
 from statsmodels.tsa.stattools import acf,ccf
 from scipy.fftpack import fft,ifft
@@ -49,43 +49,39 @@ def smooth(y, box_pts=3):
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
-def manualFFT(signal, time, type='one'):
+def manualFFT(signal, type='one'):
     if (type == 'one'):
         N = signal.size
         # sampling rate
         T = 1.0 / 1000.0
-        time_domain = np.linspace(0, 1 / (2*T), N//2)
+        time_domain = np.linspace(0, 1 / (2*T), N - 1)
         fft = np.fft.fft(signal)
-        fft = 1.0/N * np.abs(fft[0:N//2])
+        fft = 1/N * np.abs(fft[1:])
         #fft = np.abs(fft[0:N//2])
     if (type == 'two'):
         N = signal.size
         # sampling rate
         T = 1.0 / 1000.0
-        time_domain = np.linspace(0, 1 / (2*T), N)
+        time_domain = np.linspace(0, 1 / (2*T), N - 1)
         fft = np.fft.fft(signal)
-        fft = 1.0/N * np.abs(fft[0:N])
+        fft = 1/N * np.abs(fft[1:])
     return fft, time_domain
 
-def filtering(signal, time, range=20):
+def filtering(signal, range=20):
     N = signal.size
     # sampling rate
     T = 1.0 / 1000.0
-    time_domain = np.linspace(0, 1 / (2*T), N//2)
-    fft = np.fft.fft(signal)
-    fft = 1.0/N * np.abs(fft[1:N//2])
-    fft_peak = np.argmax(fft)
-    filtered = fft
-    filtered[:fft_peak-range] = 0
-    filtered[fft_peak+range:] = 0
-    time_domain = time_domain[1:]
+    time_domain = np.linspace(0, 1 / (2*T), N-1)
+    signal_fft = fft(signal)
+    signal_fft = signal_fft[1:N]
+    fft_peak = np.argmax(signal_fft)
+    #fft_peak = 400
+    blackman_ = blackman(2*range)
+    sameSizeKernel = np.zeros(len(signal_fft))
+    sameSizeKernel[fft_peak-range:fft_peak+range] = blackman_
+    filtered = np.multiply(sameSizeKernel,signal_fft.real)
+    #filtered[:fft_peak-range] = 0
+    #filtered[fft_peak+range:] = 0
     inverse_signal = ifft(filtered)
     #fft = np.abs(fft[0:N//2])
-    return inverse_signal
-
-def combining(signal1, signal2):
-    if (len(signal1) == len(signal2)):
-        combinedSignal = np.zeros(len(signal1))
-        for i in range(len(combinedSignal)):
-            combinedSignal[i] = (signal1[i] + signal2[i])/2.0
-    return combinedSignal
+    return inverse_signal.real
