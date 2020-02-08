@@ -3,6 +3,11 @@ import numpy as np
 from statsmodels.tsa.stattools import acf,ccf
 from scipy.fftpack import fft,ifft
 
+def sigmoid(len):
+    x = np.linspace(-6,+6,len)
+    y = 1/(1 + np.exp(-x))
+    return -y + 1
+
 def extract_peaks(data):
     amps = np.abs(hilbert(data))
     peaks_times = find_peaks(amps)
@@ -67,19 +72,28 @@ def manualFFT(signal, type='one'):
         fft = 1/N * np.abs(fft[1:])
     return fft, time_domain
 
-def filtering(signal, range=20):
+def filtering(signal, range=20, type = 'gaussian'):
     N = signal.size
     # sampling rate
     T = 1.0 / 1000.0
     time_domain = np.linspace(0, 1 / (2*T), N-1)
     signal_fft = fft(signal)
     signal_fft = signal_fft[1:N]
-    fft_peak = np.argmax(signal_fft)
+    signal_fft_abs = np.abs(signal_fft[:N//2])
+    fft_peak = np.argmax(signal_fft_abs)
     #fft_peak = 400
-    blackman_ = blackman(2*range)
-    sameSizeKernel = np.zeros(len(signal_fft))
-    sameSizeKernel[fft_peak-range:fft_peak+range] = blackman_
+    if (type == 'gaussian'):
+        blackman_ = blackman(2*range)
+        sameSizeKernel = np.zeros(len(signal_fft))
+        sameSizeKernel[fft_peak-range:fft_peak+range] = blackman_
+    if ( type == 'lowpass'):
+        sigmoid_ = sigmoid(2*range)
+        sameSizeKernel = np.ones(len(signal_fft))
+        sameSizeKernel[fft_peak:fft_peak+len(sigmoid_)] = sigmoid_
+        sameSizeKernel[fft_peak+len(sigmoid_):] = 0
+
     filtered = np.multiply(sameSizeKernel,signal_fft.real)
+
     #filtered[:fft_peak-range] = 0
     #filtered[fft_peak+range:] = 0
     inverse_signal = ifft(filtered)
