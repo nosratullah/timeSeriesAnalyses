@@ -82,10 +82,12 @@ def filtering(signal, range=20, type = 'gaussian'):
     signal_fft_abs = np.abs(signal_fft[:N//2])
     fft_peak = np.argmax(signal_fft_abs)
     #fft_peak = 400
+    # for bandpass filter
     if (type == 'gaussian'):
         blackman_ = blackman(2*range)
         sameSizeKernel = np.zeros(len(signal_fft))
         sameSizeKernel[fft_peak-range:fft_peak+range] = blackman_
+    # for lowpass filtering
     if ( type == 'lowpass'):
         sigmoid_ = sigmoid(2*range)
         sameSizeKernel = np.ones(len(signal_fft))
