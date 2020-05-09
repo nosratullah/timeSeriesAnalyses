@@ -23,7 +23,7 @@ def time_diffrences(data):
 
     return diff_list
 
-# A function to extract peaks 
+# A function to extract peaks
 def amps_detection(data):
     amps_data = np.abs(hilbert(data))
     amps_times = find_peaks(amps_data)
@@ -41,7 +41,7 @@ def shuff_corr(data1, data2):
     np.random.shuffle(data2)
     shuff_corr = ccf(data1,data2,unbiased=False)
     return shuff_corr
-# A function to shuffle the data and then finding the auto correlation 
+# A function to shuffle the data and then finding the auto correlation
 def shuff_acf(data):
     np.random.shuffle(data)
     shuff_corr = acf(data,fft=True)
