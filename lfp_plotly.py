@@ -18,8 +18,8 @@ in_fft, time_domain = manualFFT(in_lfp)
 ex_fft = ex_fft[:int(len(ex_fft)/2)]
 in_fft = in_fft[:int(len(in_fft)/2)]
 time_domain = time_domain[:int(len(time_domain)/2)]
-# The Plotting Part
 
+# The Plotting Part
 fig = make_subplots(rows=2, cols=2, shared_xaxes=True,
                     subplot_titles=("excitatory lfp", "excitatory fft", "inhibitory lfp", "inhibitory fft"))
 fig.add_trace(go.Scatter(x=times, y=ex_lfp,
