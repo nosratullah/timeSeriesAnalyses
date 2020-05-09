@@ -1,39 +1,18 @@
 import numpy as np
-fig = go.Figure()
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+from scipy.fftpack import fft,ifft
+#fig = go.Figure()
+def gaussian(x, mu, sig):
+    return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig,2.)))
 
-# Add traces, one for each slider step
-for step in np.arange(0, 5, 0.1):
-    fig.add_trace(
-        go.Scatter(
-            visible=False,
-            line=dict(color="#00CED1", width=6),
-            name="𝜈 = " + str(step),
-            x=np.arange(0, 10, 0.01),
-            y=np.sin(step * np.arange(0, 10, 0.01))))
-
-# Make 10th trace visible
-fig.data[10].visible = True
-
-# Create and add slider
-steps = []
-for i in range(len(fig.data)):
-    step = dict(
-        method="update",
-        args=[{"visible": [False] * len(fig.data)},
-              {"title": "Slider switched to step: " + str(i)}],  # layout attribute
-    )
-    step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
-    steps.append(step)
-
-sliders = [dict(
-    active=10,
-    currentvalue={"prefix": "Frequency: "},
-    pad={"t": 50},
-    steps=steps
-)]
-
-fig.update_layout(
-    sliders=sliders
-)
-
-fig.show()
+domain = np.linspace(0, 100, 1000)
+sinwave = np.sin(domain*10) + np.random.normal(0, 1, domain.size)
+#plt.plot(domain,sinwave)
+N = sinwave.size
+T = 0.1
+time_domain =np.linspace(0, 1/ (2*T), int(N/2)-1)
+fft = fft(sinwave)
+fft = fft[1:N//2].real
+fft = 1/N * np.abs(fft)
+plt.plot(time_domain,fft)
