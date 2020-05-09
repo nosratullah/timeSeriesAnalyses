@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from scipy.stats import stats
 
 def dotProduct(a,b):
     dot = 0
@@ -16,8 +17,13 @@ def dotProduct(a,b):
 
     return dot
 
-def convolution(signal,magnitude=3):
-    kernel = np.linspace(0,magnitude,10)
+def convolution(signal,kernel):
+    if (kernel == 'triangle'):
+        kernel = [0,1,2,3,4,5,4,3,2,1,0]
+    if (kernel == 'line'):
+        kernel = np.linspace(0,5,len(signal)/100)
+    if (kernel == 'exp'):
+        kernel = np.exp(np.linspace(0,10,len(signal)/100))
     convolution = np.zeros(len(signal))
     sameSizeKernel = np.zeros(len(signal))
     for i in range(len(convolution)):
@@ -31,13 +37,20 @@ def convolution(signal,magnitude=3):
     return convolution
 
 
-t = np.linspace(0, 1, 100)
+t = np.linspace(0,100, 1000)
 #triangle = signal.sawtooth(2 * np.pi * 5 * t, 0.5)
-triangle = np.zeros(len(t))
-triangle[10:20] = 10
-conv_ = convolution(triangle,3)
+signal = np.sin(2*t)
+conv_ = convolution(signal,kernel='exp')
+
+mu = 0
+variance = 1
+sigma = np.sqrt(variance)
+#gussian = stats.norm.pdf(x, mu, sigma)
 
 plt.figure(figsize=(15,8))
-plt.plot(triangle, label='signal')
+#plt.subplot()
+plt.plot(signal, label='signal')
 plt.plot(conv_, label='convolution')
+plt.xlim(0,len(signal)/10)
 plt.legend(loc=1)
+#plt.savefig('convolution.pdf')

@@ -1,8 +1,13 @@
-from scipy.signal import hilbert,find_peaks,correlate
+from scipy.signal import hilbert,find_peaks,correlate,blackman
 import numpy as np
 from statsmodels.tsa.stattools import acf,ccf
+from scipy.fftpack import fft,ifft
 
-# A function to extract peaks
+def sigmoid(len):
+    x = np.linspace(-6,+6,len)
+    y = 1/(1 + np.exp(-x))
+    return -y + 1
+
 def extract_peaks(data):
     amps = np.abs(hilbert(data))
     peaks_times = find_peaks(amps)
@@ -13,7 +18,6 @@ def extract_peaks(data):
     peaks = peaks[:-1]
     return peaks
 
-# A function to calculate the IEI (Interevent intervals)
 def time_diffrences(data):
     amps = np.abs(hilbert(data))
     peaks_times = find_peaks(amps)
@@ -23,7 +27,10 @@ def time_diffrences(data):
 
     return diff_list
 
+<<<<<<< HEAD
 # A function to extract peaks
+=======
+>>>>>>> 0d0dcf7fbcc440a6c0b9cb92f88297e36771dd33
 def amps_detection(data):
     amps_data = np.abs(hilbert(data))
     amps_times = find_peaks(amps_data)
@@ -35,20 +42,70 @@ def amps_detection(data):
     amps_peak_values = np.array(amps_peak_values)
     return amps_peak_values
 
-# A function to shuffle the data and then finding the cross correlation between thos two data
 def shuff_corr(data1, data2):
     np.random.shuffle(data1)
     np.random.shuffle(data2)
     shuff_corr = ccf(data1,data2,unbiased=False)
     return shuff_corr
+<<<<<<< HEAD
 # A function to shuffle the data and then finding the auto correlation
+=======
+
+>>>>>>> 0d0dcf7fbcc440a6c0b9cb92f88297e36771dd33
 def shuff_acf(data):
     np.random.shuffle(data)
     shuff_corr = acf(data,fft=True)
     return shuff_corr
 
-# Smoothing data by convolution
 def smooth(y, box_pts=3):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
+
+def manualFFT(signal, type='one'):
+    if (type == 'one'):
+        N = signal.size
+        # sampling rate
+        T = 1.0 / 1000.0
+        time_domain = np.linspace(0, 1 / (2*T), N - 1)
+        fft = np.fft.fft(signal)
+        fft = 1/N * np.abs(fft[1:])
+        #fft = np.abs(fft[0:N//2])
+    if (type == 'two'):
+        N = signal.size
+        # sampling rate
+        T = 1.0 / 1000.0
+        time_domain = np.linspace(0, 1 / (2*T), N - 1)
+        fft = np.fft.fft(signal)
+        fft = 1/N * np.abs(fft[1:])
+    return fft, time_domain
+
+def filtering(signal, range=20, type = 'gaussian'):
+    N = signal.size
+    # sampling rate
+    T = 1.0 / 1000.0
+    time_domain = np.linspace(0, 1 / (2*T), N-1)
+    signal_fft = fft(signal)
+    signal_fft = signal_fft[1:N]
+    signal_fft_abs = np.abs(signal_fft[:N//2])
+    fft_peak = np.argmax(signal_fft_abs)
+    #fft_peak = 400
+    # for bandpass filter
+    if (type == 'gaussian'):
+        blackman_ = blackman(2*range)
+        sameSizeKernel = np.zeros(len(signal_fft))
+        sameSizeKernel[fft_peak-range:fft_peak+range] = blackman_
+    # for lowpass filtering
+    if ( type == 'lowpass'):
+        sigmoid_ = sigmoid(2*range)
+        sameSizeKernel = np.ones(len(signal_fft))
+        sameSizeKernel[fft_peak:fft_peak+len(sigmoid_)] = sigmoid_
+        sameSizeKernel[fft_peak+len(sigmoid_):] = 0
+
+    filtered = np.multiply(sameSizeKernel,signal_fft.real)
+
+    #filtered[:fft_peak-range] = 0
+    #filtered[fft_peak+range:] = 0
+    inverse_signal = ifft(filtered)
+    #fft = np.abs(fft[0:N//2])
+    return inverse_signal.real
